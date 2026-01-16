@@ -11,13 +11,15 @@ import {
   Image,
   ActivityIndicator
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
 import { chatApi, WS_URL } from '../api/client';
 import { AuthContext } from '../context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
+import { theme } from '../theme/colors';
 
 const ChatScreen = ({ route }) => {
-  const { conversationId } = route.params;
+  const { conversationId, title } = route.params; // Added title for header if needed
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
   const { user } = useContext(AuthContext);
@@ -53,7 +55,7 @@ const ChatScreen = ({ route }) => {
     setLoading(true);
     try {
       const response = await chatApi.getMessages(conversationId);
-      setMessages(response.data.reverse()); // Keep newest at bottom for FlatList inverted
+      setMessages(response.data.reverse()); 
     } catch (error) {
       console.error(error);
     } finally {
@@ -125,7 +127,7 @@ const ChatScreen = ({ route }) => {
           <Image source={{ uri: item.media }} style={styles.messageImage} resizeMode="cover" />
         )}
         {item.text && <Text style={[styles.messageText, isMe ? styles.myMessageText : styles.theirMessageText]}>{item.text}</Text>}
-        <Text style={styles.timestampText}>
+        <Text style={[styles.timestampText, isMe ? { color: 'rgba(0,0,0,0.6)' } : { color: theme.muted }]}>
           {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </Text>
       </View>
@@ -133,79 +135,96 @@ const ChatScreen = ({ route }) => {
   };
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.container} 
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={90}
-    >
-      <FlatList
-        ref={flatListRef}
-        data={messages}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
-        inverted
-        contentContainerStyle={styles.listContent}
-        ListFooterComponent={loading ? <ActivityIndicator style={{ margin: 10 }} /> : null}
-      />
-      <View style={styles.inputContainer}>
-        <TouchableOpacity onPress={handlePickImage} style={styles.attachButton}>
-          <Ionicons name="image-outline" size={24} color="#007bff" />
-        </TouchableOpacity>
-        <TextInput
-          style={styles.input}
-          value={inputText}
-          onChangeText={setInputText}
-          placeholder="Type a message..."
-          multiline
+    <LinearGradient colors={theme.bg} style={styles.container}>
+      <KeyboardAvoidingView 
+        style={styles.keyboardContainer} 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 20}
+      >
+        <FlatList
+          ref={flatListRef}
+          data={messages}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id.toString()}
+          inverted
+          contentContainerStyle={styles.listContent}
+          ListFooterComponent={loading ? <ActivityIndicator color={theme.gold} style={{ margin: 10 }} /> : null}
         />
-        <TouchableOpacity onPress={sendMessage} style={styles.sendButton}>
-          <Ionicons name="send" size={24} color={inputText.trim() ? "#007bff" : "#ccc"} />
-        </TouchableOpacity>
-      </View>
-    </KeyboardAvoidingView>
+        <View style={styles.inputContainer}>
+          <TouchableOpacity onPress={handlePickImage} style={styles.attachButton}>
+            <Ionicons name="image-outline" size={24} color={theme.gold} />
+          </TouchableOpacity>
+          <TextInput
+            style={styles.input}
+            value={inputText}
+            onChangeText={setInputText}
+            placeholder="Type a message..."
+            placeholderTextColor={theme.muted}
+            multiline
+          />
+          <TouchableOpacity onPress={sendMessage} style={styles.sendButton}>
+            <Ionicons name="send" size={24} color={inputText.trim() ? theme.gold : theme.muted} />
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+  },
+  keyboardContainer: {
+    flex: 1,
   },
   listContent: {
     padding: 10,
+    paddingBottom: 20,
   },
   messageContainer: {
     maxWidth: '80%',
-    marginVertical: 5,
-    padding: 10,
-    borderRadius: 15,
+    marginVertical: 8,
+    padding: 12,
+    borderRadius: 18,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 1,
   },
   myMessage: {
     alignSelf: 'flex-end',
-    backgroundColor: '#007bff',
+    backgroundColor: theme.gold,
+    borderBottomRightRadius: 4,
   },
   theirMessage: {
     alignSelf: 'flex-start',
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#3b2715', // Dark brown from card gradient
+    borderBottomLeftRadius: 4,
+    borderWidth: 1,
+    borderColor: '#3a2b1a',
   },
   messageText: {
     fontSize: 16,
+    lineHeight: 22,
   },
   myMessageText: {
-    color: '#fff',
+    color: '#0b0a0a', // Dark text on Gold
+    fontWeight: '500',
   },
   theirMessageText: {
-    color: '#333',
+    color: theme.text, // White text on Dark
   },
   usernameText: {
     fontSize: 12,
-    color: '#666',
-    marginBottom: 2,
+    color: theme.gold,
+    marginBottom: 4,
+    fontWeight: '600',
   },
   timestampText: {
     fontSize: 10,
-    color: '#999',
-    marginTop: 4,
+    marginTop: 6,
     alignSelf: 'flex-end',
   },
   messageImage: {
@@ -216,26 +235,30 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     flexDirection: 'row',
-    padding: 10,
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
+    padding: 12,
+    paddingBottom: Platform.OS === 'ios' ? 20 : 12, // Extra padding for iOS home indicator
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#1a120c', // Card Dark
+    borderTopWidth: 1,
+    borderTopColor: '#3a2b1a',
   },
   attachButton: {
-    padding: 5,
+    padding: 8,
   },
   input: {
     flex: 1,
     marginHorizontal: 10,
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    backgroundColor: '#f8f8f8',
-    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: '#0b0a0a', // Deep Black Input
+    borderRadius: 24,
     maxHeight: 100,
+    color: theme.text, // White text
+    borderWidth: 1,
+    borderColor: '#3a2b1a',
   },
   sendButton: {
-    padding: 5,
+    padding: 8,
   },
 });
 
