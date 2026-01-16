@@ -140,7 +140,7 @@ const ChatScreen = ({ route }) => {
     <LinearGradient colors={theme.bg} style={styles.container}>
       <KeyboardAvoidingView 
         style={styles.keyboardContainer} 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined} 
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
         <FlatList
