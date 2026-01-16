@@ -3,6 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { AuthContext } from '../context/AuthContext';
 
+import ProfileScreen from '../screens/ProfileScreen';
 import LoginScreen from '../screens/LoginScreen';
 import SignupScreen from '../screens/SignupScreen';
 import ChatListScreen from '../screens/ChatListScreen';
@@ -21,9 +22,10 @@ const AppNavigator = () => {
       <Stack.Navigator>
         {user ? (
           <>
-            <Stack.Screen name="ChatList" component={ChatListScreen} options={{ title: 'Messages' }} />
+            <Stack.Screen name="ChatList" component={ChatListScreen} options={{ title: 'HetaChat' }} />
+            <Stack.Screen name="Profile" component={ProfileScreen} options={{ title: 'My Profile' }} />
             <Stack.Screen name="Chat" component={ChatScreen} options={({ route }) => ({ title: route.params.title })} />
-            <Stack.Screen name="Users" component={UserSearchScreen} options={{ title: 'Find Users' }} />
+            <Stack.Screen name="Users" component={UserSearchScreen} options={{ title: 'Find Astrologers' }} />
           </>
         ) : (
           <>

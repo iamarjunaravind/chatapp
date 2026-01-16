@@ -9,6 +9,16 @@ const ChatListScreen = ({ navigation }) => {
   const [conversations, setConversations] = useState([]);
 
   useEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity onPress={() => navigation.navigate('Profile')} style={{ marginRight: 15 }}>
+          <Ionicons name="person-circle-outline" size={30} color={theme.text} /> 
+          {/* Note: Header default color might be dark, we might need to adjust header style globally or locally */}
+        </TouchableOpacity>
+      ),
+      headerStyle: { backgroundColor: '#d6a354' }, // Gold header
+      headerTintColor: '#000',
+    });
     const unsubscribe = navigation.addListener('focus', () => {
       fetchConversations();
     });

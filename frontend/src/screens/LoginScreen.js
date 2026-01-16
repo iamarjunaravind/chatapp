@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { View, TextInput, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, TextInput, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { authApi } from '../api/client';
 import { AuthContext } from '../context/AuthContext';
@@ -26,7 +26,9 @@ const LoginScreen = ({ navigation }) => {
 
   return (
     <LinearGradient colors={theme.bg} style={styles.container}>
-      <Text style={styles.title}>AstroApp</Text>
+      <View style={styles.logoContainer}>
+        <Image source={require('../../assets/heta-logo.png')} style={styles.logo} resizeMode="contain" />
+      </View>
       <Text style={styles.subtitle}>Login to consult</Text>
       
       {error ? <Text style={styles.error}>{error}</Text> : null}
@@ -63,7 +65,8 @@ const LoginScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', padding: 30 },
-  title: { fontSize: 32, color: theme.gold, fontWeight: 'bold', textAlign: 'center', marginBottom: 5 },
+  logoContainer: { alignItems: 'center', marginBottom: 10 },
+  logo: { width: 220, height: 80 },
   subtitle: { fontSize: 16, color: theme.muted, textAlign: 'center', marginBottom: 40 },
   inputContainer: { gap: 15, marginBottom: 30 },
   input: {
