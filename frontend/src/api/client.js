@@ -1,7 +1,9 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const API_URL = "http://192.168.1.12:8000/api"; // Use local IP if testing on physical device
+const BASE_DOMAIN = "chatapp-backend-production-46fb.up.railway.app";
+const API_URL = `https://${BASE_DOMAIN}/api`;
+export const WS_URL = `wss://${BASE_DOMAIN}/ws/chat`;
 
 const api = axios.create({
   baseURL: API_URL,

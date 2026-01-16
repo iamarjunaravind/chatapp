@@ -12,7 +12,7 @@ import {
   ActivityIndicator
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { chatApi } from '../api/client';
+import { chatApi, WS_URL } from '../api/client';
 import { AuthContext } from '../context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -32,7 +32,7 @@ const ChatScreen = ({ route }) => {
   }, []);
 
   const setupWebSocket = () => {
-    const socket = new WebSocket(`ws://192.168.1.12:8000/ws/chat/${conversationId}/`);
+    const socket = new WebSocket(`${WS_URL}/${conversationId}/`);
     socket.onmessage = (e) => {
       const data = JSON.parse(e.data);
       if (data.sender_id !== user.id) {
