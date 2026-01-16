@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { View, FlatList, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, FlatList, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { chatApi } from '../api/client';
+import { theme } from '../theme/colors';
+import { Ionicons } from '@expo/vector-icons';
 
 const ChatListScreen = ({ navigation }) => {
   const [conversations, setConversations] = useState([]);
 
   useEffect(() => {
-    fetchConversations();
-  }, []);
+    const unsubscribe = navigation.addListener('focus', () => {
+      fetchConversations();
+    });
+    return unsubscribe;
+  }, [navigation]);
 
   const fetchConversations = async () => {
     try {
@@ -19,46 +25,79 @@ const ChatListScreen = ({ navigation }) => {
   };
 
   const renderItem = ({ item }) => {
-    const otherParticipant = item.participants[0]; // Simplified: logic needed for more than 2 participants
+    const other = item.participants[0]; 
     return (
       <TouchableOpacity
-        style={styles.item}
-        onPress={() => navigation.navigate('Chat', { conversationId: item.id, title: otherParticipant.username })}
+        activeOpacity={0.9}
+        onPress={() => navigation.navigate('Chat', { conversationId: item.id, title: other.username })}
       >
-        <Text style={styles.username}>{otherParticipant.username}</Text>
-        <Text style={styles.lastMessage}>{item.last_message?.text || 'No messages yet'}</Text>
+        <LinearGradient colors={theme.cardBg} style={styles.card}>
+          <View style={styles.avatarContainer}>
+             <Image source={{ uri: `https://ui-avatars.com/api/?name=${other.username}&background=d6a354&color=000` }} style={styles.avatar} />
+          </View>
+          <View style={styles.cardContent}>
+            <Text style={styles.username}>{other.username}</Text>
+            <Text style={styles.lastMessage} numberOfLines={1}>{item.last_message?.text || 'Start chatting...'}</Text>
+          </View>
+          <View style={styles.action}>
+            <Text style={styles.chatBtn}>Chat</Text>
+          </View>
+        </LinearGradient>
       </TouchableOpacity>
     );
   };
 
   return (
-    <View style={styles.container}>
+    <LinearGradient colors={theme.bg} style={styles.container}>
       <FlatList
         data={conversations}
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
+        contentContainerStyle={{ padding: 20 }}
+        ItemSeparatorComponent={() => <View style={{height: 15}} />}
       />
       <TouchableOpacity
         style={styles.fab}
         onPress={() => navigation.navigate('Users')}
       >
-        <Text style={styles.fabText}>+</Text>
+        <Ionicons name="search" size={28} color="#000" />
       </TouchableOpacity>
-    </View>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  item: { padding: 15, borderBottomWidth: 1, borderBottomColor: '#eee' },
-  username: { fontSize: 18, fontWeight: 'bold' },
-  lastMessage: { color: '#666' },
+  card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 15,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: 'rgba(214,163,84,0.1)',
+  },
+  avatarContainer: {
+    width: 50, height: 50, borderRadius: 25,
+    padding: 2,
+    borderWidth: 1, borderColor: theme.gold,
+    marginRight: 15,
+  },
+  avatar: { width: '100%', height: '100%', borderRadius: 25 },
+  cardContent: { flex: 1 },
+  username: { fontSize: 18, color: theme.text, fontWeight: '600', marginBottom: 4 },
+  lastMessage: { color: theme.muted, fontSize: 13 },
+  action: {
+    backgroundColor: theme.gold,
+    paddingVertical: 6, paddingHorizontal: 12,
+    borderRadius: 8,
+  },
+  chatBtn: { color: '#000', fontSize: 12, fontWeight: '600' },
   fab: {
     position: 'absolute', width: 60, height: 60, borderRadius: 30,
-    backgroundColor: 'blue', justifyContent: 'center', alignItems: 'center',
-    right: 20, bottom: 20, elevation: 5
-  },
-  fabText: { color: 'white', fontSize: 30 }
+    backgroundColor: theme.gold, justifyContent: 'center', alignItems: 'center',
+    right: 25, bottom: 30, elevation: 10,
+    shadowColor: '#000', shadowOpacity: 0.5, shadowRadius: 10,
+  }
 });
 
 export default ChatListScreen;

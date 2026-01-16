@@ -1,62 +1,102 @@
 import React, { useState, useContext } from 'react';
-import { View, TextInput, Button, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, TextInput, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { authApi } from '../api/client';
 import { AuthContext } from '../context/AuthContext';
+import { theme } from '../theme/colors';
 
 const SignupScreen = ({ navigation }) => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const { login } = useContext(AuthContext);
 
   const handleSignup = async () => {
+    setLoading(true);
     try {
       const response = await authApi.signup({ username, email, password });
       await login(response.data.user, { access: response.data.access, refresh: response.data.refresh });
     } catch (err) {
       setError(err.response?.data?.error || 'Signup failed');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Create Account</Text>
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-      <TextInput
-        style={styles.input}
-        placeholder="Username"
-        value={username}
-        onChangeText={setUsername}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        keyboardType="email-address"
-        onChangeText={setEmail}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        value={password}
-        secureTextEntry
-        onChangeText={setPassword}
-      />
-      <Button title="Sign Up" onPress={handleSignup} />
-      <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-        <Text style={styles.link}>Already have an account? Login</Text>
-      </TouchableOpacity>
-    </ScrollView>
+    <LinearGradient colors={theme.bg} style={{flex: 1}}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.title}>Join AstroApp</Text>
+        <Text style={styles.subtitle}>Connect with experts</Text>
+        
+        {error ? <Text style={styles.error}>{error}</Text> : null}
+        
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder="Username"
+            placeholderTextColor={theme.muted}
+            value={username}
+            onChangeText={setUsername}
+            autoCapitalize="none"
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            placeholderTextColor={theme.muted}
+            value={email}
+            keyboardType="email-address"
+            onChangeText={setEmail}
+            autoCapitalize="none"
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            placeholderTextColor={theme.muted}
+            value={password}
+            secureTextEntry
+            onChangeText={setPassword}
+          />
+        </View>
+
+        <TouchableOpacity style={styles.button} onPress={handleSignup} disabled={loading}>
+          {loading ? <ActivityIndicator color="#000" /> : <Text style={styles.buttonText}>Create Account</Text>}
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+          <Text style={styles.link}>Already have an account? <Text style={{color: theme.gold}}>Login</Text></Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flexGrow: 1, justifyContent: 'center', padding: 20 },
-  title: { fontSize: 24, marginBottom: 20, textAlign: 'center' },
-  input: { borderWidth: 1, borderColor: '#ccc', padding: 10, marginBottom: 10, borderRadius: 5 },
-  error: { color: 'red', marginBottom: 10 },
-  link: { color: 'blue', marginTop: 15, textAlign: 'center' },
+  container: { flexGrow: 1, justifyContent: 'center', padding: 30 },
+  title: { fontSize: 32, color: theme.gold, fontWeight: 'bold', textAlign: 'center', marginBottom: 5 },
+  subtitle: { fontSize: 16, color: theme.muted, textAlign: 'center', marginBottom: 40 },
+  inputContainer: { gap: 15, marginBottom: 30 },
+  input: {
+    backgroundColor: theme.inputBg,
+    borderWidth: 1,
+    borderColor: theme.border,
+    padding: 15,
+    borderRadius: 12,
+    color: theme.text,
+    fontSize: 16,
+  },
+  button: {
+    backgroundColor: theme.gold,
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  buttonText: { color: '#000', fontSize: 16, fontWeight: '600' },
+  error: { color: theme.error, marginBottom: 15, textAlign: 'center' },
+  link: { color: theme.muted, marginTop: 10, textAlign: 'center', fontSize: 14 },
 });
 
 export default SignupScreen;
