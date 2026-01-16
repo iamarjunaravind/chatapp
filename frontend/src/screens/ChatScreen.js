@@ -13,19 +13,21 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { chatApi, WS_URL } from '../api/client';
 import { AuthContext } from '../context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../theme/colors';
 
 const ChatScreen = ({ route }) => {
-  const { conversationId, title } = route.params; // Added title for header if needed
+  const { conversationId, title } = route.params; 
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
   const { user } = useContext(AuthContext);
   const [ws, setWs] = useState(null);
   const [loading, setLoading] = useState(false);
   const flatListRef = useRef();
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     fetchMessages();
@@ -138,8 +140,8 @@ const ChatScreen = ({ route }) => {
     <LinearGradient colors={theme.bg} style={styles.container}>
       <KeyboardAvoidingView 
         style={styles.keyboardContainer} 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 20}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'padding'} 
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
         <FlatList
           ref={flatListRef}
@@ -150,7 +152,7 @@ const ChatScreen = ({ route }) => {
           contentContainerStyle={styles.listContent}
           ListFooterComponent={loading ? <ActivityIndicator color={theme.gold} style={{ margin: 10 }} /> : null}
         />
-        <View style={styles.inputContainer}>
+        <View style={[styles.inputContainer, { paddingBottom: Math.max(insets.bottom, 12) }]}>
           <TouchableOpacity onPress={handlePickImage} style={styles.attachButton}>
             <Ionicons name="image-outline" size={24} color={theme.gold} />
           </TouchableOpacity>
@@ -236,9 +238,9 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     padding: 12,
-    paddingBottom: Platform.OS === 'ios' ? 20 : 12, // Extra padding for iOS home indicator
+    // paddingBottom is handled inline for safe area
     alignItems: 'center',
-    backgroundColor: '#1a120c', // Card Dark
+    backgroundColor: '#1a120c', 
     borderTopWidth: 1,
     borderTopColor: '#3a2b1a',
   },
@@ -250,10 +252,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
     paddingHorizontal: 16,
     paddingVertical: 10,
-    backgroundColor: '#0b0a0a', // Deep Black Input
+    backgroundColor: '#0b0a0a', 
     borderRadius: 24,
     maxHeight: 100,
-    color: theme.text, // White text
+    color: theme.text, 
     borderWidth: 1,
     borderColor: '#3a2b1a',
   },
